@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Analytika – E-shop{% endblock %}
+
+{% block content %}
+<h1>Analytika</h1>
+
+{% set max_suma = minuty[0][1] if minuty else 1 %}
+{% set max_kusy = kusy[0][1] if kusy else 1 %}
+{% set max_pocet = pocty[0][1] if pocty else 1 %}
+
+<!-- Štatistiky -->
+<div class="cards section">
+  <div class="card">
+    <div class="label">Min. objednávka</div>
+    <div class="value">{{ "%.2f"|format(stat.min) }} €</div>
+  </div>
+  <div class="card">
+    <div class="label">Max. objednávka</div>
+    <div class="value">{{ "%.2f"|format(stat.max) }} €</div>
+  </div>
+  <div class="card">
+    <div class="label">Priemer</div>
+    <div class="value">{{ "%.2f"|format(stat.priemer) }} €</div>
+  </div>
+  <div class="card">
+    <div class="label">Celkový obrat</div>
+    <div class="value">{{ "%.2f"|format(stat.sucet) }} €</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;flex-wrap:wrap">
+
+  <!-- Minúté peniaze -->
+  <div class="section">
+    <h2>Minúté peniaze podľa zákazníka</h2>
+    {% for meno, suma in minuty %}
+    <div class="bar-row">
+      <div class="bar-label" title="{{ meno }}">{{ meno }}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:{{ (suma / max_suma * 100)|round }}%">
+          {{ "%.0f"|format(suma) }} €
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Predané kusy -->
+  <div class="section">
+    <h2>Predané kusy podľa produktu</h2>
+    {% for produkt, ks in kusy %}
+    <div class="bar-row">
+      <div class="bar-label">{{ produkt }}</div>
+      <div class="bar-track">
+        <div class="bar-fill blue" style="width:{{ (ks / max_kusy * 100)|round }}%">
+          {{ ks }} ks
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Počet objednávok -->
+  <div class="section">
+    <h2>Počet objednávok podľa zákazníka</h2>
+    {% for meno, n in pocty %}
+    <div class="bar-row">
+      <div class="bar-label" title="{{ meno }}">{{ meno }}</div>
+      <div class="bar-track">
+        <div class="bar-fill green" style="width:{{ (n / max_pocet * 100)|round }}%">
+          {{ n }}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pole cien -->
+  <div class="section">
+    <h2>Celkové ceny objednávok (€)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th class="text-right">Cena (€)</th></tr></thead>
+        <tbody>
+          {% for cena in pole_cien %}
+          <tr>
+            <td style="color:#aaa">{{ loop.index }}</td>
+            <td class="text-right">
+              <span class="badge {% if cena > 500 %}high{% endif %}">
+                {{ "%.2f"|format(cena) }} €
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

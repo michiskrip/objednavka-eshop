@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Objednávky – E-shop{% endblock %}
+
+{% block content %}
+<h1>Objednávky</h1>
+
+<form method="get" class="filter-bar">
+  <div class="fg">
+    <label>Zákazník</label>
+    <input name="zakaznik" placeholder="Hľadať meno…" value="{{ filter_zakaznik }}">
+  </div>
+  <div class="fg">
+    <label>Produkt</label>
+    <input name="produkt" placeholder="Hľadať produkt…" value="{{ filter_produkt }}">
+  </div>
+  <div class="fg">
+    <label>Min. cena (€)</label>
+    <input name="min_suma" type="number" min="0" step="0.01" placeholder="0" value="{{ filter_min_suma }}">
+  </div>
+  <div class="fg">
+    <label>Zoradenie</label>
+    <select name="sort">
+      <option value="default" {% if sort=='default' %}selected{% endif %}>Predvolené</option>
+      <option value="cena_desc" {% if sort=='cena_desc' %}selected{% endif %}>Cena ↓</option>
+      <option value="cena_asc"  {% if sort=='cena_asc'  %}selected{% endif %}>Cena ↑</option>
+      <option value="meno"      {% if sort=='meno'      %}selected{% endif %}>Meno A–Z</option>
+      <option value="produkt"   {% if sort=='produkt'   %}selected{% endif %}>Produkt A–Z</option>
+    </select>
+  </div>
+  <button class="btn btn-primary" type="submit">Filtrovať</button>
+  <a href="/objednavky" class="btn" style="background:#eee;color:#333">Reset</a>
+</form>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Zákazník</th>
+        <th>Produkt</th>
+        <th class="text-right">Cena/ks</th>
+        <th class="text-right">Ks</th>
+        <th class="text-right">Spolu</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in objednavky %}
+      <tr>
+        <td style="color:#aaa">{{ loop.index }}</td>
+        <td>{{ o.zakaznik }}</td>
+        <td><span class="badge">{{ o.produkt }}</span></td>
+        <td class="text-right">{{ "%.2f"|format(o.cena_za_kus) }} €</td>
+        <td class="text-right">{{ o.pocet_kusov }}</td>
+        <td class="text-right">
+          <span class="badge {% if o.celkova_cena > 500 %}high{% endif %}">
+            {{ "%.2f"|format(o.celkova_cena) }} €
+          </span>
+        </td>
+        <td>
+          <a href="/vymaz/{{ o.zakaznik }}"
+             onclick="return confirm('Vymazať všetky objednávky zákazníka {{ o.zakaznik }}?')"
+             class="btn btn-sm btn-danger">Vymazať</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" style="padding:2rem;text-align:center;color:#aaa">Žiadne výsledky</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p style="margin-top:.75rem;color:#888;font-size:.85rem">
+  Zobrazených {{ objednavky|length }} objednávok
+</p>
+{% endblock %}

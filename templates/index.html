@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Prehľad – E-shop{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="cards">
+  <div class="card">
+    <div class="label">Objednávky</div>
+    <div class="value">{{ stat.pocet }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Celkový obrat</div>
+    <div class="value">{{ "%.2f"|format(stat.sucet) }} €</div>
+  </div>
+  <div class="card">
+    <div class="label">Priemerná objednávka</div>
+    <div class="value">{{ "%.2f"|format(stat.priemer) }} €</div>
+  </div>
+  <div class="card">
+    <div class="label">Min / Max</div>
+    <div class="value">{{ "%.0f"|format(stat.min) }} / {{ "%.0f"|format(stat.max) }} €</div>
+  </div>
+  <div class="card">
+    <div class="label">Zákazníci</div>
+    <div class="value">{{ pocet_zakaznikov }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Produkty</div>
+    <div class="value">{{ pocet_produktov }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Top zákazník</div>
+    <div class="value" style="font-size:1rem">{{ top_zakaznik[0].split()[0] }}</div>
+    <div class="sub">{{ "%.2f"|format(top_zakaznik[1]) }} €</div>
+  </div>
+  <div class="card">
+    <div class="label">Top produkt</div>
+    <div class="value" style="font-size:1rem">{{ top_produkt[0] }}</div>
+    <div class="sub">{{ top_produkt[1] }} ks predaných</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Posledných 5 objednávok</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Zákazník</th><th>Produkt</th>
+          <th>Cena/ks</th><th>Ks</th><th class="text-right">Spolu</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in objednavky[-5:]|reverse %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ o.zakaznik }}</td>
+          <td><span class="badge">{{ o.produkt }}</span></td>
+          <td>{{ "%.2f"|format(o.cena_za_kus) }} €</td>
+          <td>{{ o.pocet_kusov }}</td>
+          <td class="text-right">
+            <strong {% if o.celkova_cena > 500 %}style="color:#e94560"{% endif %}>
+              {{ "%.2f"|format(o.celkova_cena) }} €
+            </strong>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:.75rem">
+    <a href="/objednavky" class="btn btn-primary btn-sm">Zobraziť všetky →</a>
+  </p>
+</div>
+{% endblock %}

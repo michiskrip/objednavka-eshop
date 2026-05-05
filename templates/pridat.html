@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Pridať objednávku – E-shop{% endblock %}
+
+{% block content %}
+<h1>Pridať objednávku</h1>
+
+<div class="form-box">
+  <form method="post">
+    <div class="form-group">
+      <label for="zakaznik">Meno zákazníka</label>
+      <input id="zakaznik" name="zakaznik" placeholder="Napr. Ján Novák" required>
+    </div>
+    <div class="form-group">
+      <label for="produkt">Produkt</label>
+      <input id="produkt" name="produkt" placeholder="Napr. Notebook" required>
+    </div>
+    <div class="form-group">
+      <label for="cena_za_kus">Cena za kus (€)</label>
+      <input id="cena_za_kus" name="cena_za_kus" type="number" min="0.01" step="0.01"
+             placeholder="0.00" required>
+    </div>
+    <div class="form-group">
+      <label for="pocet_kusov">Počet kusov</label>
+      <input id="pocet_kusov" name="pocet_kusov" type="number" min="1" step="1"
+             placeholder="1" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Pridať objednávku</button>
+    <a href="/objednavky" class="btn" style="background:#eee;color:#333;margin-left:.5rem">Zrušiť</a>
+  </form>
+</div>
+{% endblock %}

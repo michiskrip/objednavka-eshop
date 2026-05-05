@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}E-shop{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      background: #1a1a2e;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    }
+    nav .brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #e94560;
+      text-decoration: none;
+      letter-spacing: .5px;
+    }
+    nav a {
+      color: #c8d0e0;
+      text-decoration: none;
+      font-size: .9rem;
+      padding: .25rem .6rem;
+      border-radius: 4px;
+      transition: background .15s, color .15s;
+    }
+    nav a:hover, nav a.active { background: #e94560; color: #fff; }
+
+    /* MAIN */
+    main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    h1 { font-size: 1.6rem; margin-bottom: 1.5rem; color: #1a1a2e; }
+    h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #1a1a2e; }
+
+    /* KARTY */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .card .label { font-size: .78rem; color: #666; text-transform: uppercase; letter-spacing: .5px; }
+    .card .value { font-size: 1.6rem; font-weight: 700; color: #e94560; margin-top: .2rem; }
+    .card .sub   { font-size: .82rem; color: #888; margin-top: .15rem; }
+
+    /* TABUĽKA */
+    .table-wrap { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #1a1a2e; color: #fff; }
+    thead th { padding: .75rem 1rem; text-align: left; font-size: .82rem; font-weight: 600; letter-spacing: .4px; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #f0f2f5; transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f7f8fc; }
+    tbody td { padding: .65rem 1rem; font-size: .9rem; }
+    .badge {
+      display: inline-block;
+      padding: .18rem .55rem;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 600;
+      background: #eef0f8;
+      color: #444;
+    }
+    .badge.high { background: #fff0f0; color: #e94560; }
+    .text-right { text-align: right; }
+
+    /* FORMULÁR */
+    .form-box { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 1.75rem 2rem; max-width: 520px; }
+    .form-group { margin-bottom: 1.1rem; }
+    label { display: block; font-size: .83rem; font-weight: 600; margin-bottom: .35rem; color: #444; }
+    input, select {
+      width: 100%; padding: .55rem .75rem;
+      border: 1px solid #d0d5e0;
+      border-radius: 6px;
+      font-size: .9rem;
+      outline: none;
+      transition: border .15s;
+    }
+    input:focus, select:focus { border-color: #e94560; }
+    .btn {
+      display: inline-block;
+      padding: .55rem 1.25rem;
+      border: none;
+      border-radius: 6px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: #e94560; color: #fff; }
+    .btn-sm { padding: .3rem .75rem; font-size: .78rem; }
+    .btn-danger { background: #ff6b6b; color: #fff; }
+
+    /* FILTER BAR */
+    .filter-bar {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      align-items: flex-end;
+    }
+    .filter-bar .fg { display: flex; flex-direction: column; gap: .3rem; min-width: 140px; }
+    .filter-bar label { font-size: .78rem; font-weight: 600; color: #555; }
+    .filter-bar input, .filter-bar select { padding: .4rem .6rem; font-size: .85rem; }
+
+    /* FLASH */
+    .flash { padding: .75rem 1.25rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: .9rem; }
+    .flash.success { background: #eafaf1; color: #1e8449; border-left: 4px solid #27ae60; }
+    .flash.error   { background: #fdedec; color: #c0392b; border-left: 4px solid #e74c3c; }
+
+    /* BAR CHART */
+    .bar-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; font-size: .88rem; }
+    .bar-label { width: 180px; flex-shrink: 0; text-align: right; color: #444; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { flex: 1; background: #f0f2f5; border-radius: 4px; height: 22px; overflow: hidden; }
+    .bar-fill { height: 100%; background: #e94560; border-radius: 4px; display: flex; align-items: center; padding-left: .5rem; font-size: .75rem; color: #fff; font-weight: 600; min-width: 2px; white-space: nowrap; }
+    .bar-fill.blue { background: #3a86ff; }
+    .bar-fill.green { background: #06d6a0; }
+
+    .section { margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="/">🛒 E-shop</a>
+  <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Prehľad</a>
+  <a href="/objednavky" {% if request.endpoint == 'objednavky' %}class="active"{% endif %}>Objednávky</a>
+  <a href="/analytika" {% if request.endpoint == 'analytika' %}class="active"{% endif %}>Analytika</a>
+  <a href="/pridat" {% if request.endpoint == 'pridat' %}class="active"{% endif %}>+ Pridať</a>
+</nav>
+
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>
