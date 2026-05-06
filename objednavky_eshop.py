@@ -133,7 +133,8 @@ class EshopDatabaza:
                     print(f"  [Varovanie] Riadok {cislo}: {e}, preskočený.")
         return nacitane
 
-
+    def nacitaj_data_db:
+    
 # ============================================================
 # ANALYTIKA
 # ============================================================
@@ -352,147 +353,159 @@ def main() -> None:
 
     # Inicializácia objektov
     db = EshopDatabaza()
-    for args in VZOROVE_OBJEDNAVKY:
-        db.pridaj(*args)
 
-    an = Analytika(db)
-    rep = Report(db)
+    pocet_vlozenych_objednavok= db.nacitaj_zo_suboru("vzorove_objednavky.csv")
+    print(pocet_vlozenych_objednavok)
+    print (db.vsetky)
+    
+    # for args in VZOROVE_OBJEDNAVKY:
+        # print(args)
+        # db.pridaj(*args)
 
-    # ----------------------------------------------------------
-    print(sep + "1. ZOZNAM OBJEDNÁVOK")
-    print(f"  Celkový počet: {db.pocet}")
-    rep.vypis_tabulku(db.vsetky)
 
-    print("\n  Objednávky Anny Novákovej:")
-    rep.vypis_tabulku(db.filtruj_zakaznika("Anna Nováková"))
-
-    print("\n  Objednávky nad 500 €:")
-    rep.vypis_tabulku(db.filtruj_nad_sumu())
-
-    # ----------------------------------------------------------
-    print(sep + "2. NEMENNÝ ZÁZNAM (namedtuple)")
-    ukazka = db.vsetky[0]
-    print(f"  Zákazník  : {ukazka.zakaznik}")
-    print(f"  Produkt   : {ukazka.produkt}")
-    print(f"  Cena/ks   : {ukazka.cena_za_kus:.2f} €")
-    print(f"  Počet ks  : {ukazka.pocet_kusov}")
-    print(f"  Celkom    : {ukazka.celkova_cena:.2f} €")
-    print()
-    nova = ukazka._replace(pocet_kusov=ukazka.pocet_kusov + 1)
-    print(f"  Pôvodná (nezmenená): {ukazka}")
-    print(f"  Nová (po _replace) : {nova}")
-    print(f"  Sú rovnaké?        : {ukazka == nova}")
-
-    # ----------------------------------------------------------
-    print(sep + "3. MNOŽINY")
-    print(f"  Unikátni zákazníci ({len(an.unikatni_zakaznici)}): {sorted(an.unikatni_zakaznici)}")
-    print(f"  Unikátne produkty  ({len(an.unikatne_produkty)}): {sorted(an.unikatne_produkty)}")
-    print(f"\n  Zákazníci Notebooku   : {sorted(an.zakaznici_produktu('Notebook'))}")
-    print(f"  Produkty Petra Kováča : {sorted(an.produkty_zakaznika('Peter Kováč'))}")
-
-    # ----------------------------------------------------------
-    print(sep + "4. SLOVNÍKY")
-    print("  Minúté peniaze podľa zákazníka:")
-    for m, s in sorted(an.minuty_na_zakaznika().items()):
-        print(f"    {m:<22}: {s:>9.2f} €")
-
-    print("\n  Predané kusy podľa produktu:")
-    for p, k in sorted(an.predane_kusy_na_produkt().items()):
-        print(f"    {p:<15}: {k:>4} ks")
-
-    print("\n  Počet objednávok podľa zákazníka:")
-    for m, n in sorted(an.pocet_objednavok_na_zakaznika().items()):
-        print(f"    {m:<22}: {n:>4}")
-
-    tz, tz_s = an.top_zakaznik()
-    tp, tp_k = an.top_produkt()
-    print(f"\n  Top zákazník         : {tz} ({tz_s:.2f} €)")
-    print(f"  Najpredávanejší prod.: {tp} ({tp_k} ks)")
-
-    # ----------------------------------------------------------
-    print(sep + "5. ČÍSELNÉ POLE (array)")
-    pole = an.pole_cien()
-    stat = an.statistiky_cien()
-    print(f"  Pole cien : {list(pole)}")
-    print(f"  Min       : {stat['min']:.2f} €")
-    print(f"  Max       : {stat['max']:.2f} €")
-    print(f"  Priemer   : {stat['priemer']:.2f} €")
-    print(f"  Súčet     : {stat['sucet']:.2f} €")
-    print(f"  Počet     : {stat['pocet']}")
-
-    # ----------------------------------------------------------
-    print(sep + "6. VNORENÉ DÁTA")
-    vnorena = an.vnorena_struktura()
-    print("  Objednávky Tomáša Blahu:")
-    rep.vypis_tabulku(vnorena["Tomáš Blaho"])
-    suma_tb = sum(o.celkova_cena for o in vnorena["Tomáš Blaho"])
-    print(f"\n  Celková suma Tomáša Blahu: {suma_tb:.2f} €")
-    zmeno, pocet = an.zakaznik_s_najviac_objednavkami()
-    print(f"  Zákazník s najviac objednávkami: {zmeno} ({pocet})")
-    print("\n  Súhrnný report zákazníkov:")
-    print(f"  {'Zákazník':<22} {'Objednávky':>12} {'Celkom':>12}")
-    print("  " + "-" * 48)
-    for meno, objs in sorted(vnorena.items()):
-        print(f"  {meno:<22} {len(objs):>12} {sum(o.celkova_cena for o in objs):>11.2f}€")
-
-    # ----------------------------------------------------------
-    print(sep + "7. TRIEDENIE A VYHĽADÁVANIE")
-    print("  Zoradené podľa ceny (zostupne):")
-    rep.vypis_tabulku(db.zorad_podla_ceny())
-
-    print("\n  Zoradené podľa mena:")
-    rep.vypis_tabulku(db.zorad_podla_mena())
-
-    print("\n  Produkty podľa predaných kusov:")
-    for prod, ks in an.zorad_produkty_podla_kusov():
-        print(f"    {prod:<15}: {ks:>4} ks")
-
-    print("\n  Objednávky produktu 'Myš':")
-    rep.vypis_tabulku(db.filtruj_produkt("Myš"))
-
-    print("\n  Zákazníci nad 1 000 €:")
-    for m, s in sorted(an.zakaznici_nad_sumu(1000), key=lambda x: x[1], reverse=True):
-        print(f"    {m:<22}: {s:.2f} €")
-
-    # ----------------------------------------------------------
-    print(sep + "8. ZÁVEREČNÝ REPORT")
-    rep.vypis_zhrnutie()
-
-    # ----------------------------------------------------------
-    print(sep + "BONUS – CRUD operácie a export")
-    db.pridaj("Eva Tóthová", "Slúchadlá", 149.00, 3)
-    print(f"  Pridaná objednávka. Celkový počet: {db.pocet}")
-
-    ok = db.uprav_pocet_kusov("Eva Tóthová", "Slúchadlá", 5)
-    print(f"  Úprava kusov: {'OK' if ok else 'nenájdené'}")
-
-    vymazane = db.vymaz_zakaznika("Eva Tóthová")
-    print(f"  Vymazaných {vymazane} objednávok. Zostatok: {db.pocet}")
-
-    rep.exportuj_do_suboru("report.txt")
-
-    # ----------------------------------------------------------
-    print(sep + "OŠETRENIE CHÝB")
-
-    prazdna_db = EshopDatabaza()
-    Report.vypis_tabulku([])
-    print(f"  Štatistiky prázdnej DB: {Analytika(prazdna_db).statistiky_cien()}")
-
-    try:
-        Analytika(prazdna_db).top_zakaznik()
-    except ValueError as e:
-        print(f"  Prázdna DB – ValueError: {e}")
-
-    for popis, args in [
-        ("prázdne meno",  ("",    "Myš", 25.5,  2)),
-        ("nulová cena",   ("Ján", "Myš",  0.0,  2)),
-        ("záporný počet", ("Ján", "Myš", 25.5, -1)),
-    ]:
-        try:
-            db.pridaj(*args)
-        except ValueError as e:
-            print(f"  [{popis}] ValueError: {e}")
 
 
 if __name__ == "__main__":
-    main()
+    main()      
+
+#     an = Analytika(db)
+#     rep = Report(db)
+
+#     # ----------------------------------------------------------
+#     print(sep + "1. ZOZNAM OBJEDNÁVOK")
+#     print(f"  Celkový počet: {db.pocet}")
+#     rep.vypis_tabulku(db.vsetky)
+
+#     print("\n  Objednávky Anny Novákovej:")
+#     rep.vypis_tabulku(db.filtruj_zakaznika("Anna Nováková"))
+
+#     print("\n  Objednávky nad 500 €:")
+#     rep.vypis_tabulku(db.filtruj_nad_sumu())
+
+#     # ----------------------------------------------------------
+#     print(sep + "2. NEMENNÝ ZÁZNAM (namedtuple)")
+#     ukazka = db.vsetky[0]
+#     print(f"  Zákazník  : {ukazka.zakaznik}")
+#     print(f"  Produkt   : {ukazka.produkt}")
+#     print(f"  Cena/ks   : {ukazka.cena_za_kus:.2f} €")
+#     print(f"  Počet ks  : {ukazka.pocet_kusov}")
+#     print(f"  Celkom    : {ukazka.celkova_cena:.2f} €")
+#     print()
+#     nova = ukazka._replace(pocet_kusov=ukazka.pocet_kusov + 1)
+#     print(f"  Pôvodná (nezmenená): {ukazka}")
+#     print(f"  Nová (po _replace) : {nova}")
+#     print(f"  Sú rovnaké?        : {ukazka == nova}")
+
+#     # ----------------------------------------------------------
+#     print(sep + "3. MNOŽINY")
+#     print(f"  Unikátni zákazníci ({len(an.unikatni_zakaznici)}): {sorted(an.unikatni_zakaznici)}")
+#     print(f"  Unikátne produkty  ({len(an.unikatne_produkty)}): {sorted(an.unikatne_produkty)}")
+#     print(f"\n  Zákazníci Notebooku   : {sorted(an.zakaznici_produktu('Notebook'))}")
+#     print(f"  Produkty Petra Kováča : {sorted(an.produkty_zakaznika('Peter Kováč'))}")
+
+#     # ----------------------------------------------------------
+#     print(sep + "4. SLOVNÍKY")
+#     print("  Minúté peniaze podľa zákazníka:")
+#     for m, s in sorted(an.minuty_na_zakaznika().items()):
+#         print(f"    {m:<22}: {s:>9.2f} €")
+
+#     print("\n  Predané kusy podľa produktu:")
+#     for p, k in sorted(an.predane_kusy_na_produkt().items()):
+#         print(f"    {p:<15}: {k:>4} ks")
+
+#     print("\n  Počet objednávok podľa zákazníka:")
+#     for m, n in sorted(an.pocet_objednavok_na_zakaznika().items()):
+#         print(f"    {m:<22}: {n:>4}")
+
+#     tz, tz_s = an.top_zakaznik()
+#     tp, tp_k = an.top_produkt()
+#     print(f"\n  Top zákazník         : {tz} ({tz_s:.2f} €)")
+#     print(f"  Najpredávanejší prod.: {tp} ({tp_k} ks)")
+
+#     # ----------------------------------------------------------
+#     print(sep + "5. ČÍSELNÉ POLE (array)")
+#     pole = an.pole_cien()
+#     stat = an.statistiky_cien()
+#     print(f"  Pole cien : {list(pole)}")
+#     print(f"  Min       : {stat['min']:.2f} €")
+#     print(f"  Max       : {stat['max']:.2f} €")
+#     print(f"  Priemer   : {stat['priemer']:.2f} €")
+#     print(f"  Súčet     : {stat['sucet']:.2f} €")
+#     print(f"  Počet     : {stat['pocet']}")
+
+#     # ----------------------------------------------------------
+#     print(sep + "6. VNORENÉ DÁTA")
+#     vnorena = an.vnorena_struktura()
+#     print("  Objednávky Tomáša Blahu:")
+#     rep.vypis_tabulku(vnorena["Tomáš Blaho"])
+#     suma_tb = sum(o.celkova_cena for o in vnorena["Tomáš Blaho"])
+#     print(f"\n  Celková suma Tomáša Blahu: {suma_tb:.2f} €")
+#     zmeno, pocet = an.zakaznik_s_najviac_objednavkami()
+#     print(f"  Zákazník s najviac objednávkami: {zmeno} ({pocet})")
+#     print("\n  Súhrnný report zákazníkov:")
+#     print(f"  {'Zákazník':<22} {'Objednávky':>12} {'Celkom':>12}")
+#     print("  " + "-" * 48)
+#     for meno, objs in sorted(vnorena.items()):
+#         print(f"  {meno:<22} {len(objs):>12} {sum(o.celkova_cena for o in objs):>11.2f}€")
+
+#     # ----------------------------------------------------------
+#     print(sep + "7. TRIEDENIE A VYHĽADÁVANIE")
+#     print("  Zoradené podľa ceny (zostupne):")
+#     rep.vypis_tabulku(db.zorad_podla_ceny())
+
+#     print("\n  Zoradené podľa mena:")
+#     rep.vypis_tabulku(db.zorad_podla_mena())
+
+#     print("\n  Produkty podľa predaných kusov:")
+#     for prod, ks in an.zorad_produkty_podla_kusov():
+#         print(f"    {prod:<15}: {ks:>4} ks")
+
+#     print("\n  Objednávky produktu 'Myš':")
+#     rep.vypis_tabulku(db.filtruj_produkt("Myš"))
+
+#     print("\n  Zákazníci nad 1 000 €:")
+#     for m, s in sorted(an.zakaznici_nad_sumu(1000), key=lambda x: x[1], reverse=True):
+#         print(f"    {m:<22}: {s:.2f} €")
+
+#     # ----------------------------------------------------------
+#     print(sep + "8. ZÁVEREČNÝ REPORT")
+#     rep.vypis_zhrnutie()
+
+#     # ----------------------------------------------------------
+#     print(sep + "BONUS – CRUD operácie a export")
+#     db.pridaj("Eva Tóthová", "Slúchadlá", 149.00, 3)
+#     print(f"  Pridaná objednávka. Celkový počet: {db.pocet}")
+
+#     ok = db.uprav_pocet_kusov("Eva Tóthová", "Slúchadlá", 5)
+#     print(f"  Úprava kusov: {'OK' if ok else 'nenájdené'}")
+
+#     vymazane = db.vymaz_zakaznika("Eva Tóthová")
+#     print(f"  Vymazaných {vymazane} objednávok. Zostatok: {db.pocet}")
+
+#     rep.exportuj_do_suboru("report.txt")
+
+#     # ----------------------------------------------------------
+#     print(sep + "OŠETRENIE CHÝB")
+
+#     prazdna_db = EshopDatabaza()
+#     Report.vypis_tabulku([])
+#     print(f"  Štatistiky prázdnej DB: {Analytika(prazdna_db).statistiky_cien()}")
+
+#     try:
+#         Analytika(prazdna_db).top_zakaznik()
+#     except ValueError as e:
+#         print(f"  Prázdna DB – ValueError: {e}")
+
+#     for popis, args in [
+#         ("prázdne meno",  ("",    "Myš", 25.5,  2)),
+#         ("nulová cena",   ("Ján", "Myš",  0.0,  2)),
+#         ("záporný počet", ("Ján", "Myš", 25.5, -1)),
+#     ]:
+#         try:
+#             db.pridaj(*args)
+#         except ValueError as e:
+#             print(f"  [{popis}] ValueError: {e}")
+
+
+# if __name__ == "__main__":
+#     main()
