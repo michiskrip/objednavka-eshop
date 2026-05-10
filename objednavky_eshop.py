@@ -9,10 +9,13 @@ OOP verzia rozdelená do tried:
 """
 
 import array
+import csv
 import os
+import random
 from collections import namedtuple
 from datetime import datetime
-
+from html import escape
+from db_connection import DBConnection
 
 # ============================================================
 # DÁTOVÝ MODEL
@@ -133,8 +136,12 @@ class EshopDatabaza:
                     print(f"  [Varovanie] Riadok {cislo}: {e}, preskočený.")
         return nacitane
 
-    def nacitaj_data_db:
-    
+    def nacitaj_data_db (self):
+        """Načíta objednávky z databázy."""
+        db = DBConnection()
+        data = db.fetch_all("SELECT zakaznik, produkt, cena_za_kus, pocet_kusov FROM objednavky")
+        for zakaznik, produkt, cena_za_kus, pocet_kusov in data:
+            self.pridaj(zakaznik, produkt, cena_za_kus, pocet_kusov)
 # ============================================================
 # ANALYTIKA
 # ============================================================
@@ -323,6 +330,69 @@ class Report:
             f.write(obsah)
         print(f"  Report exportovaný do: {cesta}")
 
+    @staticmethod
+    def exportuj_tabulku_csv(zoznam: list, cesta: str) -> None:
+        with open(cesta, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f, delimiter=";")
+            writer.writerow(["zakaznik", "produkt", "cena_za_kus", "pocet_kusov", "celkova_cena"])
+            for o in zoznam:
+                writer.writerow([o.zakaznik, o.produkt, o.cena_za_kus, o.pocet_kusov, o.celkova_cena])
+        print(f"  CSV tabuľka exportovaná do: {cesta}")
+
+    @staticmethod
+    def exportuj_tabulku_html(zoznam: list, cesta: str) -> None:
+        riadky = []
+        for i, o in enumerate(zoznam, 1):
+            riadky.append(
+                "<tr>"
+                f"<td>{i}</td>"
+                f"<td>{escape(o.zakaznik)}</td>"
+                f"<td>{escape(o.produkt)}</td>"
+                f"<td class='number'>{o.cena_za_kus:.2f} €</td>"
+                f"<td class='number'>{o.pocet_kusov}</td>"
+                f"<td class='number'>{o.celkova_cena:.2f} €</td>"
+                "</tr>"
+            )
+
+        obsah = f"""<!doctype html>
+<html lang="sk">
+<head>
+    <meta charset="utf-8">
+    <title>Objednávky e-shopu</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 32px; color: #222; }}
+        h1 {{ font-size: 24px; }}
+        table {{ border-collapse: collapse; width: 100%; max-width: 1100px; }}
+        th, td {{ border: 1px solid #ccc; padding: 8px 10px; text-align: left; }}
+        th {{ background: #f2f2f2; }}
+        .number {{ text-align: right; }}
+    </style>
+</head>
+<body>
+    <h1>Objednávky e-shopu</h1>
+    <p>Počet objednávok: {len(zoznam)}</p>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Zákazník</th>
+                <th>Produkt</th>
+                <th>Cena za kus</th>
+                <th>Počet kusov</th>
+                <th>Celková cena</th>
+            </tr>
+        </thead>
+        <tbody>
+            {''.join(riadky)}
+        </tbody>
+    </table>
+</body>
+</html>
+"""
+        with open(cesta, "w", encoding="utf-8") as f:
+            f.write(obsah)
+        print(f"  HTML tabuľka exportovaná do: {cesta}")
+
 
 # ============================================================
 # VZOROVÉ DÁTa
@@ -349,24 +419,66 @@ VZOROVE_OBJEDNAVKY = [
 # ============================================================
 
 def main() -> None:
-    sep = "\n" + "~" * 60 + "\n"
+    print("Program sa spustil")
+    dbconn = DBConnection()
 
-    # Inicializácia objektov
+    dbconn.execute("""
+        CREATE TABLE IF NOT EXISTS objednavky (
+            zakaznik TEXT NOT NULL,
+            produkt TEXT NOT NULL,
+            cena_za_kus NUMERIC(10, 2) NOT NULL,
+            pocet_kusov INTEGER NOT NULL
+        )
+    """)
+
+    dbconn.execute("TRUNCATE TABLE objednavky")
+
+    fiktivne = generuj_fiktivne_data(100)
+
+    for zakaznik, produkt, cena, pocet in fiktivne:
+        dbconn.execute(
+            """
+            INSERT INTO objednavky (zakaznik, produkt, cena_za_kus, pocet_kusov)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (zakaznik, produkt, cena, pocet)
+        )
+
+    dbconn.commit()
+
     db = EshopDatabaza()
+    db.nacitaj_data_db()
 
-    pocet_vlozenych_objednavok= db.nacitaj_zo_suboru("vzorove_objednavky.csv")
-    print(pocet_vlozenych_objednavok)
-    print (db.vsetky)
-    
-    # for args in VZOROVE_OBJEDNAVKY:
-        # print(args)
-        # db.pridaj(*args)
+    print("Počet objednávok:", db.pocet)
+    print("Objednávky:")
+    Report.vypis_tabulku(db.vsetky)
+
+    rep = Report(db)
+    rep.vypis_zhrnutie()
+    rep.exportuj_do_suboru("report.txt")
+    Report.exportuj_tabulku_csv(db.vsetky, "objednavky.csv")
+    Report.exportuj_tabulku_html(db.vsetky, "objednavky.html")
+
+    dbconn.close()
+
+
+def generuj_fiktivne_data(pocet=100):
+    mena = ["Anna Nováková","Peter Kováč","Jana Horáková","Tomáš Blaho","Martin Sloboda","Eva Tóthová"]
+    produkty = ["Notebook","Myš","Klávesnica","Monitor","Slúchadlá"]
+    data = []
+    for _ in range(pocet):
+        zakaznik = random.choice(mena)
+        produkt = random.choice(produkty)
+        cena = round(random.uniform(10, 1500), 2)
+        pocet_kusov = random.randint(1, 5)
+        data.append((zakaznik, produkt, cena, pocet_kusov))
+    return data
 
 
 
 
 if __name__ == "__main__":
-    main()      
+    main()    
 
 #     an = Analytika(db)
 #     rep = Report(db)
