@@ -10,6 +10,7 @@ OOP verzia rozdelená do tried:
 
 import array
 import csv
+from decimal import Decimal
 import os
 import random
 from collections import namedtuple
@@ -182,7 +183,7 @@ class Analytika:
     def minuty_na_zakaznika(self) -> dict[str, float]:
         vysledok: dict[str, float] = {}
         for o in self._data:
-            vysledok[o.zakaznik] = vysledok.get(o.zakaznik, 0.0) + o.celkova_cena
+            vysledok[o.zakaznik] = vysledok.get(o.zakaznik, Decimal("0")) + o.celkova_cena
         return vysledok
 
     def predane_kusy_na_produkt(self) -> dict[str, int]:

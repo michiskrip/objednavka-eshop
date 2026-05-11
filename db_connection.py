@@ -11,7 +11,7 @@ class DBConnection:
             cls._instancia.conn = psycopg2.connect(
                 host="localhost",
                 port=5432,
-                dbname="postgres",
+                dbname="db.test",
                 user="michi",
                 password="asd123"
             )

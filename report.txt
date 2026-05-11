@@ -1,20 +1,21 @@
-Exportované: 2026-05-05 20:31:41
+Exportované: 2026-05-11 21:44:16
 ====================================================
 ZÁVEREČNÝ REPORT E-SHOPU
 ====================================================
-Celkový počet objednávok: 12
-Celkový obrat : 4796.00 €
-Priemerná hodnota objednávky: 399.67 €
-Unikátni zákazníci: 5
+Celkový počet objednávok: 100
+Celkový obrat : 248886.08 €
+Priemerná hodnota objednávky: 2488.86 €
+Unikátni zákazníci: 6
 Unikátne produkty : 5
-Top zákazník: Anna Nováková (1688.00 €)
-Najpredávanejší produkt : Klávesnica (6 ks)
+Top zákazník: Tomáš Blaho (66542.39 €)
+Najpredávanejší produkt : Slúchadlá (63 ks)
 
 Zákazník Celkom
 ------------------------------------
-Anna Nováková1688.00€
-Peter Kováč1295.50€
-Tomáš Blaho1219.00€
-Martin Sloboda478.00€
-Jana Horáková 115.50€
+Tomáš Blaho 66542.39€
+Martin Sloboda43813.53€
+Anna Nováková 42676.12€
+Peter Kováč 40746.16€
+Eva Tóthová 32110.09€
+Jana Horáková 22997.79€
 ====================================================
