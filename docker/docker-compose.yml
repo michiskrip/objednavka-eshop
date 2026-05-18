@@ -1,0 +1,36 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-eshop}
+      - DB_USER=${DB_USER:-eshop_user}
+      - DB_PASSWORD=${DB_PASSWORD:-eshop_pass}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME:-eshop}
+      - POSTGRES_USER=${DB_USER:-eshop_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-eshop_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-eshop_user} -d ${DB_NAME:-eshop}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

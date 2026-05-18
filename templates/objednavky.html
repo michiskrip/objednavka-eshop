@@ -58,6 +58,10 @@
           </span>
         </td>
         <td>
+          <form action="/uprav/{{ o.zakaznik }}/{{ o.produkt }}" method="POST" style="display:inline">
+            <input type="number" name="pocet_kusov" value="{{ o.pocet_kusov }}" min="1" style="width:60px">
+            <button type="submit" class="btn btn-sm btn-warning">Upraviť</button>
+          </form>
           <a href="/vymaz/{{ o.zakaznik }}"
              onclick="return confirm('Vymazať všetky objednávky zákazníka {{ o.zakaznik }}?')"
              class="btn btn-sm btn-danger">Vymazať</a>

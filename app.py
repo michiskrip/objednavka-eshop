@@ -4,8 +4,32 @@ Spustenie: python3 app.py
 URL:       http://localhost:5000
 """
 
+from decimal import Decimal
+
 from flask import Flask, render_template, request, redirect, url_for, flash
-from objednavky_eshop import EshopDatabaza, Analytika, Report, VZOROVE_OBJEDNAVKY
+#from objednavky_eshop import VZOROVE_OBJEDNAVKY
+from src.service.Analytika import Analytika
+from src.service.EshopDatabaza import EshopDatabaza
+from src.service.Report import Report
+
+
+VZOROVE_OBJEDNAVKY = [
+    ("Anna Novakova",     "Notebook",      899.00, 1),
+    ("Peter Kovac",       "Mys",            25.50, 3),
+    ("Jana Horakova",     "Klavesnica",     45.00, 2),
+    ("Anna Novakova",     "Monitor",       320.00, 2),
+    ("Tomas Blaho",       "Notebook",      899.00, 1),
+    ("Peter Kovac",       "Notebook",      899.00, 1),
+    ("Jana Horakova",     "Mys",            25.50, 1),
+    ("Martin Sloboda",    "Sluchadla",     149.00, 2),
+    ("Tomas Blaho",       "Monitor",       320.00, 1),
+    ("Martin Sloboda",    "Klavesnica",     45.00, 4),
+    ("Lucia Mrkvickova",  "Webkamera",      79.90, 2),
+    ("Marek Urban",       "USB-C kabel",    12.99, 5),
+    ("Eva Fialova",       "Tablet",        429.00, 1),
+    ("Norbert Sima",      "Externy disk",  119.90, 2),
+    ("Lucia Mrkvickova",  "Monitor",       320.00, 1),
+]
 
 app = Flask(__name__)
 app.secret_key = "eshop-dev-key"
@@ -55,7 +79,8 @@ def objednavky():
         zoznam = [o for o in zoznam if hladany_produkt.lower() in o.produkt.lower()]
     if min_suma:
         try:
-            zoznam = [o for o in zoznam if o.celkova_cena > float(min_suma)]
+            hranica = Decimal(min_suma)
+            zoznam = [o for o in zoznam if o.celkova_cena > hranica]
         except ValueError:
             pass
 
@@ -101,7 +126,7 @@ def pridat():
             db.pridaj(
                 request.form["zakaznik"],
                 request.form["produkt"],
-                float(request.form["cena_za_kus"]),
+                request.form["cena_za_kus"],
                 int(request.form["pocet_kusov"]),
             )
             flash("Objednávka bola úspešne pridaná.", "success")
@@ -111,11 +136,23 @@ def pridat():
     return render_template("pridat.html")
 
 
+@app.route("/uprav/<zakaznik>/<produkt>", methods=["POST"])
+def uprav(zakaznik, produkt):
+    try:
+        novy_pocet = int(request.form["pocet_kusov"])
+        db.uprav_pocet_kusov(zakaznik, produkt, novy_pocet)
+        flash("Počet kusov bol upravený.", "success")
+    except ValueError as e:
+        flash(f"Chyba: {e}", "error")
+    return redirect(url_for("objednavky"))
+
+
 @app.route("/vymaz/<zakaznik>")
 def vymaz(zakaznik):
     pocet = db.vymaz_zakaznika(zakaznik)
     flash(f"Vymazaných {pocet} objednávok zákazníka {zakaznik}.", "success")
     return redirect(url_for("objednavky"))
+
 
 
 if __name__ == "__main__":
